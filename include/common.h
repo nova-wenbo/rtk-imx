@@ -3,10 +3,27 @@
 
 //E0=gyr E1=tmp E2=rtk
 struct tty_msg{
-        char type; 
-        int  length;
+        char type;
+	 
         void *data;
 };
+struct mpu6050_data{
+	float a[3];     //xyz轴加速度
+	float w[3];     //角加速度
+	float angle[3]; //角度
+};
+
+typedef struct msg{
+	unsigned char start;
+	unsigned char version;
+	unsigned int length;
+	struct tm *time;
+	struct tty_msg *tty_msg;
+	unsigned int checksum;
+	unsigned char end;
+}imx_msg_t;
+
+
 struct rtk_gps{
         int time;
         int data;
