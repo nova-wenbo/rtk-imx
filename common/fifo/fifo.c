@@ -7,7 +7,9 @@
 
 int fifo_open(const char *fifo_name){
     int fifo_fd;
-    mkfifo(fifo_name, 0777);
+    if(access(fifo_name, F_OK) == -1){
+        mkfifo(fifo_name, 0777);
+    }
     fifo_fd = open(fifo_name, O_RDWR);
     if(fifo_fd < 0 ){
         return -1;
