@@ -12,7 +12,7 @@
 #include "debuglog.h"
 
 struct tty_msg{
-        char type;
+        unsigned char type;
         void *data;
 };
 struct mpu6050_data{
@@ -41,18 +41,30 @@ tty_info *uart_init(int id, int speed)
 }
 int get_mpu6050_data(unsigned char data[])
 {
-	int i,n;
+	int i;
+	struct mpu6050_data pdata;
+	struct tty_msg msg;
+	msg.type = 0xE0;
+	
 	for(i=0;i<1024;i++){
-		//printf(" %02x ",data[i]);
 		if(data[i] == 0x55 && data[i+1] == 0x51){
-			for(n=i;n<1024;n++){
-				printf(" %02x ", data[n]);
-			}
-		return 0;
+			memset(&pdata, 0, sizeof(struct mpu6050_data));
+			pdata.a[0] = (data[i+3]<<8| data[i+2])/32768.0*16;
+			pdata.a[1] = (data[i+5]<<8| data[i+4])/32768.0*16;
+			pdata.a[2] = (data[i+7]<<8| data[i+6])/32768.0*16;
+			printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.a[0],pdata.a[1],pdata.a[2]);
+			pdata.w[0] = (data[i+14]<<8| data[i+13])/32768.0*2000;
+                        pdata.w[1] = (data[i+16]<<8| data[i+15])/32768.0*2000;
+                        pdata.w[2] = (data[i+18]<<8| data[i+17])/32768.0*2000;
+                        printf("w = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.w[0],pdata.w[1],pdata.w[2]);
+			pdata.angle[0] = (data[i+25]<<8| data[i+24])/32768.0*180;
+                        pdata.angle[1] = (data[i+27]<<8| data[i+26])/32768.0*180;
+                        pdata.angle[2] = (data[i+29]<<8| data[i+28])/32768.0*180;
+                        printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.angle[0],pdata.angle[1],pdata.angle[2]);
+			msg.data = &pdata;	
 		}
 	}
-	return -1;
-
+	return 0;
 }
 
 int main(int argc, char **argv)
