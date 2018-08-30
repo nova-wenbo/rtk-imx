@@ -3,8 +3,7 @@
 
 //E0=gyr E1=tmp E2=rtk
 struct tty_msg{
-        char type;
-	 
+        char type;	 
         void *data;
 };
 struct mpu6050_data{
@@ -16,7 +15,7 @@ struct mpu6050_data{
 typedef struct msg{
 	unsigned char start;
 	unsigned char version;
-	unsigned int length;
+	unsigned char sign;  //F0实时数据   F1存储数据	
 	struct tm *time;
 	struct tty_msg *tty_msg;
 	unsigned int checksum;
