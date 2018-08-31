@@ -10,10 +10,10 @@
 #include <sys/stat.h>
 #include "serialport.h"
 #include "debuglog.h"
-
+#include "fifo.h"
 struct tty_msg{
         unsigned char type;
-        void *data;
+        char data[0];
 };
 struct mpu6050_data{
         float a[3];     //xyz轴加速度
@@ -39,14 +39,14 @@ tty_info *uart_init(int id, int speed)
 	}
 	return putty;
 }
-int get_mpu6050_data(unsigned char data[])
+int get_mpu6050_data(unsigned char data[], int fd)
 {
 	int i;
 	struct mpu6050_data pdata;
-	struct tty_msg msg;
-	msg.type = 0xE0;
+	struct tty_msg* msg = malloc(sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
+	msg->type = 0xE0;
 	
-	for(i=0;i<1024;i++){
+	for(i=0;i<33;i++){
 		if(data[i] == 0x55 && data[i+1] == 0x51){
 			memset(&pdata, 0, sizeof(struct mpu6050_data));
 			pdata.a[0] = (data[i+3]<<8| data[i+2])/32768.0*16;
@@ -61,33 +61,30 @@ int get_mpu6050_data(unsigned char data[])
                         pdata.angle[1] = (data[i+27]<<8| data[i+26])/32768.0*180;
                         pdata.angle[2] = (data[i+29]<<8| data[i+28])/32768.0*180;
                         printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.angle[0],pdata.angle[1],pdata.angle[2]);
-			msg.data = &pdata;	
+			memcpy(msg->data, &pdata, (size_t) sizeof(struct mpu6050_data));	
+			fifo_tx(fd, msg, sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
 		}
 	}
+	free(msg);
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
 	fd_set recv_fds;
-	unsigned char buff[1024];
+	unsigned char buff[33];
 	int fd_result;
 	int maxfd = 0;
 	struct timeval tv;
-	struct tty_msg *gyr_data = (struct tty_msg *)malloc(sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
-	if(gyr_data == NULL){	
-		sys_log("gyr malloc mem failed");
-		return -1;
-	}
 	tty_info *gyr_tty = uart_init(0, 9600);
 		if(gyr_tty == NULL)
 			return -1;
 	
-	tv.tv_sec = 10;    //10ms
+	tv.tv_sec = 50;    //10ms
 	tv.tv_usec = 0;
 	if(gyr_tty->fd > maxfd)
 		maxfd = gyr_tty->fd;
-	
+	int gyr_fd = fifo_open("./gyr_fifo");
 	for(;;){
 
 		FD_ZERO(&recv_fds);
@@ -107,11 +104,11 @@ int main(int argc, char **argv)
 		else {
 			if(FD_ISSET(gyr_tty->fd, &recv_fds)){
 				recvn_tty(gyr_tty,buff,sizeof(buff));
-				get_mpu6050_data(buff);
+				get_mpu6050_data(buff, gyr_fd);
 			}
 		}
 	}
-	free(gyr_data);
+	fifo_close(gyr_fd);
 	clean_tty(gyr_tty);
 	return 0;
 }
