@@ -13,12 +13,12 @@
 #define addresssize sizeof(struct sockaddr_in)
 
 void init_serervaddr(struct sockaddr_in *paddr, char *ipstr, int port){    
-     bzero ((char *) paddr, addresssize); 
+    bzero ((char *) paddr, addresssize); 
     paddr -> sin_family = AF_INET;
     if(ipstr == NULL){
         paddr ->sin_addr.s_addr = htonl(INADDR_ANY);
     }else{
-        inet_ntop(AF_INET, paddr->sin_addr.s_addr, ipstr, sizeof(ipstr));
+        inet_pton(AF_INET, ipstr, &(paddr->sin_addr.s_addr));
     }
     paddr -> sin_port = htons(port);
     return;
