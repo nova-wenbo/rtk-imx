@@ -8,6 +8,14 @@
 #include <sys/types.h>
 #include <netinet/tcp.h>
 
+struct socket_info {
+    int domain;
+    int type;
+    int listennum;
+    socklen_t addrlen;
+};
+int init_serversocket(struct sockaddr *net_addr, struct socket_info msocket_info);
+int init_clientsocket(struct sockaddr *net_addr, struct socket_info msocket_info);
 void init_serervaddr(struct sockaddr_in *paddr, char *ipstr, int port);
 int create_socket(int domain, int type);
 int bind_socket(int sockfd, const struct sockaddr *net_addr, socklen_t addrlen);

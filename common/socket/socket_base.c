@@ -11,7 +11,6 @@
 #include "socket_base.h"
 
 #define addresssize sizeof(struct sockaddr_in)
-
 void init_serervaddr(struct sockaddr_in *paddr, char *ipstr, int port){    
     bzero ((char *) paddr, addresssize); 
     paddr -> sin_family = AF_INET;
@@ -36,7 +35,6 @@ int create_socket(int domain, int type)
          return sockfd;
 }
 
-
 int bind_socket(int sockfd, const struct sockaddr *net_addr, socklen_t addrlen)
 {
     if (sockfd < 0 || net_addr == NULL)
@@ -50,7 +48,6 @@ int bind_socket(int sockfd, const struct sockaddr *net_addr, socklen_t addrlen)
     return 0;
 }
 
-
 int listen_socket(int sockfd, int listennum)
 {
     if (sockfd < 0)
@@ -63,6 +60,33 @@ int listen_socket(int sockfd, int listennum)
     }
     return 0;
 
+}
+
+int init_serversocket(struct sockaddr *net_addr, struct socket_info msocket_info){
+    int sockfd = 0;
+    sockfd = socket(msocket_info.domain, msocket_info.type, 0);
+    if (sockfd < 0)
+    {
+        return -1;
+    }
+    if(bind(sockfd, net_addr, msocket_info.addrlen) < 0)
+    {
+        return -1;
+    }
+    listen(sockfd, msocket_info.listennum);
+    return sockfd;
+}
+
+int init_clientsocket(struct sockaddr *net_addr, struct socket_info msocket_info){
+    int confd = 0;
+    confd = socket(msocket_info.domain, msocket_info.type, 0);
+    printf("~~~~~~~~~~~~%d \n", confd);
+    if(confd < 0)
+    {
+        return -1;
+    }    
+    connect(confd, net_addr, msocket_info.addrlen);
+    return confd;
 }
 
 int accept_socket(int sockfd, struct sockaddr *paddr, int addrlen)

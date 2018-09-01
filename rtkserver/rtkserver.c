@@ -11,15 +11,21 @@
 #define MAXLINE 4096
 
 int main(int argc , char **argv){
+    struct socket_info msocket_info;
     struct sockaddr_in serveraddr, clientaddr;
     int sockfd, addrlen, confd, len, i;
     char ipstr[128];
     char buf[MAXLINE];
     bzero(&serveraddr, sizeof(serveraddr));
+    msocket_info.domain = AF_INET;
+    msocket_info.type = SOCK_STREAM;
+    msocket_info.listennum = 128;
+    msocket_info.addrlen = sizeof(serveraddr);
     init_serervaddr(&serveraddr, NULL, SERVER_PORT);
-    sockfd = create_socket(AF_INET, SOCK_STREAM);
+    /*sockfd = create_socket(AF_INET, SOCK_STREAM);
     bind_socket(sockfd, (struct sockaddr_in *)&serveraddr, sizeof(serveraddr));
-    listen_socket(sockfd, 128);
+    listen_socket(sockfd, 128);*/
+    sockfd = init_serversocket((struct sockaddr_in *)&serveraddr, msocket_info);
     while(1){
         addrlen = sizeof(clientaddr);
         confd = accept_socket(sockfd, (struct sockaddr *)&clientaddr, &addrlen);
