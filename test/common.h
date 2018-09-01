@@ -1,6 +1,6 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
-
+#define PROT_VERSION 0x01
 //E0=gyr E1=tmp E2=rtk
 struct tty_msg{
         char type;	 
@@ -13,12 +13,12 @@ struct mpu6050_data{
 };
 
 typedef struct msg{
-	unsigned char start;
-	unsigned char version;
-	unsigned char sign;  //F0实时数据   F1存储数据	
-	struct tty_msg *tty_msg;
+	unsigned char start;   //OxO1
+	unsigned char version; //0x01 : first version
+	unsigned char sign;    //F0实时数据   F1存储数据	
+	struct tty_msg tty_msg;
+	unsigned char end;    //0xFF
 	unsigned int checksum;
-	unsigned char end;
 }imx_msg_t;
 
 

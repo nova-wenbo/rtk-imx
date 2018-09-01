@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         struct timeval tv;
 	struct mpu6050_data gyr;
 	struct msg gyr_msg;
-	struct msg *gyr_data = malloc(sizeof(struct msg) + sizeof(struct mpu6050_data));
+	struct tty_msg *gyr_data = malloc(sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
 	if(gyr_data == NULL){
 		sys_log("malloc mem failed");
 		return -1;
@@ -54,15 +54,17 @@ int main(int argc, char **argv)
                 else {
                         if(FD_ISSET(gyr_fd, &recv_fds)){
 				memset(&gyr, 0, sizeof(struct mpu6050_data));
-        			fifo_rx(gyr_fd, &gyr_data->tty_msg, sizeof(struct msg) + sizeof(struct mpu6050_data)); 
-				if((unsigned char)gyr_data->tty_msg.type == 0xe0){
-					memcpy(&gyr, &gyr_data->tty_msg.data, sizeof(struct mpu6050_data));
-                                	printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr.angle[0],gyr.angle[1],gyr.angle[2]);	
+        			fifo_rx(gyr_fd, gyr_data, sizeof(struct tty_msg) + sizeof(struct mpu6050_data)); 
+				printf("type : %02x \n",(unsigned char)gyr_data->type);
+				//memcpy(&gyr, gyr_data->data, sizeof(struct mpu6050_data));
+				//printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr.angle[0],gyr.angle[1],gyr.angle[2]);
+				if((unsigned char)gyr_data->type == 0xe0){	
 					gyr_msg.start = 0x01;
 					gyr_msg.version = PROT_VERSION;
 					gyr_msg.sign = 0xF0;
-					gyr_msg.end = 0xFF;
-					gyr_msg.checksum = sizeof(struct msg) + sizeof(struct mpu6050_data);  //37					
+					memcpy(&gyr_msg.tty_msg, gyr_data, sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
+					gyr_msg.checksum = sizeof(gyr_msg.tty_msg);
+					sys_log(" %d : %d", gyr_msg.checksum, sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
 				}		                       
                                 
                         }

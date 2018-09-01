@@ -10,16 +10,8 @@
 #include <sys/stat.h>
 #include "serialport.h"
 #include "debuglog.h"
+#include "common.h"
 #include "fifo.h"
-struct tty_msg{
-        unsigned char type;
-        char data[0];
-};
-struct mpu6050_data{
-        float a[3];     //xyz轴加速度
-        float w[3];     //角加速度
-        float angle[3]; //角度
-};
 
 tty_info *uart_init(int id, int speed)
 {
@@ -61,7 +53,7 @@ int get_mpu6050_data(unsigned char data[], int fd)
                         pdata.angle[1] = (data[i+27]<<8| data[i+26])/32768.0*180;
                         pdata.angle[2] = (data[i+29]<<8| data[i+28])/32768.0*180;
                         printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.angle[0],pdata.angle[1],pdata.angle[2]);
-			memcpy(msg->data, &pdata, (size_t) sizeof(struct mpu6050_data));	
+			memcpy(msg->data, &pdata, (size_t) sizeof(struct mpu6050_data));
 			fifo_tx(fd, msg, sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
 		}
 	}
@@ -85,6 +77,10 @@ int main(int argc, char **argv)
 	if(gyr_tty->fd > maxfd)
 		maxfd = gyr_tty->fd;
 	int gyr_fd = fifo_open("./gyr_fifo");
+	if(gyr_fd < 0){
+		sys_log("open or create fifo faild");
+		return -1;
+	}
 	for(;;){
 
 		FD_ZERO(&recv_fds);
