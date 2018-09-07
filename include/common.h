@@ -13,9 +13,13 @@ struct mpu6050_data{
 	float angle[3]; //角度
 };
 
+struct tmp{
+	float tmp;
+};
+
 typedef struct msg{
 	unsigned char start;   //OxO1
-	char *sn;
+//	char *sn;
 	unsigned char version; //0x01 : first version
 	unsigned char sign;    //F0实时数据   F1存储数据	
 	struct tty_msg tty_msg;
