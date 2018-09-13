@@ -32,6 +32,7 @@ function compile_all(){
 function compile_clean(){
 	rm $WORKDIR/lib -rf
 	rm $WORKDIR/obj -rf
+	find $WORKDIR -name null |xargs rm -rf
 }
 function choose_build_module(){
         if   [ "$1" == "-lib" ]; then

@@ -19,7 +19,7 @@
 #include "s2jdef.h"
 #include "cJSON.h"
 
-#if 0
+#if 1
 static cJSON *struct_to_json_gyr(void* struct_obj) {
     gyr_msg *struct_msg = (gyr_msg *)struct_obj;
     
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                         if(FD_ISSET(gyr_fd, &recv_fds)){
 				memset(&gyr_msg.data, 0, sizeof(struct mpu6050_data));
                			fifo_rx(gyr_fd, &gyr_msg.data, sizeof(struct mpu6050_data));
-				//struct_to_json_gyr(&gyr_msg);
+				struct_to_json_gyr(&gyr_msg);
 //				gyr_msg *converted_msg_obj = json_to_struct(json_msg);
 
 //				if(memcmp(&gyr_msg, converted_msg_obj, sizeof(gyr_msg))) {
