@@ -7,10 +7,10 @@ function compile_lib(){
 	if [ ! -d $WORKDIR/lib ];then
 		mkdir -p $WORKDIR/lib
 	fi
-	cd $WORKDIR/common/cJson && make > null
+	cd $WORKDIR/common/cJson && make > null 
 	cd $WORKDIR/common/debuglog && make > null
 	cd $WORKDIR/common/fifo && make > null
-	cd $WORKDIR/common/serialport && make > null
+	cd $WORKDIR/common/serialport && make > null 
 	cd $WORKDIR
 }
 
@@ -19,7 +19,7 @@ function compile_obj(){
 	if [ ! -d $WORKDIR/obj ];then
                 mkdir -p $WORKDIR/obj
         fi
-	cd $WORKDIR/ctd && make > null
+	cd $WORKDIR/ctd && make >  null
 	cd $WORKDIR/rtks && make > null
 	cd $WORKDIR/rtkc && make > null
 	cd $WORKDIR

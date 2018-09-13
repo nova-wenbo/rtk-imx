@@ -12,7 +12,7 @@
 #include "debuglog.h"
 #include "common.h"
 #include "fifo.h"
-
+#include "gps.h"
 tty_info *uart_init(int id, int speed)
 {
 	tty_info *putty = ready_tty(id);

@@ -10,7 +10,7 @@ CTD_LIB = $(LIB)/libcJson.so \
 CC=gcc
 CTD_OBJ=$(OBJ)/ctd
 CFLAGS = -g -I${INC}
-CTD_SRC=ctd_main.c
+CTD_SRC=ctd_main.c gps.c
 $(CTD_OBJ) : $(CTD_SRC)
 	$(CC) $(CFLAGS) $(CTD_SRC) $(CTD_LIB) -lm -o $(CTD_OBJ) 
 
