@@ -1,5 +1,5 @@
 #include "serialport.h"
-
+#include <sys/file.h>
 tty_info *ready_tty(int id) 
 { 
 	tty_info *ptty; 
@@ -9,7 +9,7 @@ tty_info *ready_tty(int id)
 		return NULL; 
 	memset(ptty,0,sizeof(tty_info)); 
 	pthread_mutex_init(&ptty->mt,NULL); 
-	sprintf(ptty->name,"/dev/ttyS%d",id); 
+	sprintf(ptty->name,"/dev/ttyUSB%d",id); 
 	// 打开并且设置串口 
 	ptty->fd = open(ptty->name, O_RDWR | O_NOCTTY |O_NDELAY); 
 	if (ptty->fd <0) 
@@ -48,7 +48,7 @@ int clean_tty(tty_info *ptty)
 /////////////////////////////////////////////////////////////////////////////// 
 int set_ttySpeed(tty_info *ptty, int speed) 
 { 
-	int i; 
+	//int i; 
 	// 
 	// 进行新的串口设置,数据位为8位 
 	bzero(&ptty->ntm, sizeof(ptty->ntm)); 

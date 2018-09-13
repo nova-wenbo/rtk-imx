@@ -10,8 +10,8 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/ioctl.h>
-int fifo_open(const char *fifo_name);
-int fifo_tx(int fifo_fd, void *data, int len);
-int fifo_rx(int fifo_fd, void*data, int len);
-int fifo_close(int fifo_fd);
+extern int fifo_open(const char *fifo_name);
+extern int fifo_tx(int fifo_fd, void *data, int len);
+extern int fifo_rx(int fifo_fd, void*data, int len);
+extern int fifo_close(int fifo_fd);
 #endif

@@ -15,11 +15,11 @@
 #include "debuglog.h"
 #include "fifo.h"
 #include "common.h"
-#include "cJson/s2j.h"
-#include "cJson/s2jdef.h"
-#include "cJson/cJSON.h"
+#include "s2j.h"
+#include "s2jdef.h"
+#include "cJSON.h"
 
-#if 1
+#if 0
 static cJSON *struct_to_json_gyr(void* struct_obj) {
     gyr_msg *struct_msg = (gyr_msg *)struct_obj;
     
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                         if(FD_ISSET(gyr_fd, &recv_fds)){
 				memset(&gyr_msg.data, 0, sizeof(struct mpu6050_data));
                			fifo_rx(gyr_fd, &gyr_msg.data, sizeof(struct mpu6050_data));
-				cJSON *json_msg = struct_to_json_gyr(&gyr_msg);
+				//struct_to_json_gyr(&gyr_msg);
 //				gyr_msg *converted_msg_obj = json_to_struct(json_msg);
 
 //				if(memcmp(&gyr_msg, converted_msg_obj, sizeof(gyr_msg))) {
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     	//			s2j_delete_json_obj(json_msg);
     	//			s2j_delete_struct_obj(converted_msg_obj);
 
-				//printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr_msg.data.a[0],gyr_msg.data.a[1],gyr_msg.data.a[2]);
+				printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr_msg.data.a[0],gyr_msg.data.a[1],gyr_msg.data.a[2]);
 					
                         }
                 }

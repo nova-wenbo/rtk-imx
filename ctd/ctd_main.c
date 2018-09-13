@@ -11,6 +11,7 @@
 #include "serialport.h"
 #include "debuglog.h"
 #include "common.h"
+#include "fifo.h"
 
 tty_info *uart_init(int id, int speed)
 {
@@ -30,59 +31,55 @@ tty_info *uart_init(int id, int speed)
 	}
 	return putty;
 }
-
+int get_mpu6050_data(unsigned char data[], int fd)
+{
+	int i;
+	struct mpu6050_data pdata;
+	for(i=0;i<33;i++){
+		if(data[i] == 0x55 && data[i+1] == 0x51){
+			memset(&pdata, 0, sizeof(struct mpu6050_data));
+			pdata.a[0] = (data[i+3]<<8| data[i+2])/32768.0*16;
+			pdata.a[1] = (data[i+5]<<8| data[i+4])/32768.0*16;
+			pdata.a[2] = (data[i+7]<<8| data[i+6])/32768.0*16;
+			printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.a[0],pdata.a[1],pdata.a[2]);
+			pdata.w[0] = (data[i+14]<<8| data[i+13])/32768.0*2000;
+                        pdata.w[1] = (data[i+16]<<8| data[i+15])/32768.0*2000;
+                        pdata.w[2] = (data[i+18]<<8| data[i+17])/32768.0*2000;
+                        printf("w = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.w[0],pdata.w[1],pdata.w[2]);
+			pdata.angle[0] = (data[i+25]<<8| data[i+24])/32768.0*180;
+                        pdata.angle[1] = (data[i+27]<<8| data[i+26])/32768.0*180;
+                        pdata.angle[2] = (data[i+29]<<8| data[i+28])/32768.0*180;
+                        printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.angle[0],pdata.angle[1],pdata.angle[2]);
+			fifo_tx(fd, &pdata, sizeof(struct mpu6050_data));
+		}
+	}
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
 	fd_set recv_fds;
-	unsigned char buff[64];
-	unsigned int nbyte = 0;
+	unsigned char buff[33];
 	int fd_result;
 	int maxfd = 0;
 	struct timeval tv;
-	struct tty_msg *gyr_data = (struct tty_msg *)malloc(sizeof(struct tty_msg));
-	if(gyr_data == NULL){	
-		sys_log("gyr malloc mem failed");
-		return -1;
-	}
-	struct tty_msg *tmp_data = (struct tty_msg *)malloc(sizeof(struct tty_msg));
-	if(tmp_data == NULL){
-                sys_log("tmp malloc mem failed");
-		return -1;
-	}
-	struct tty_msg *rtk_data = (struct tty_msg *)malloc(sizeof(struct tty_msg));
-	if(rtk_data == NULL){
-		sys_log("rtk malloc mem failed");
-		return -1;
-	}
-	tty_info *gyr_tty = uart_init(0, 115200);
+	tty_info *gyr_tty = uart_init(0, 9600);
 		if(gyr_tty == NULL)
 			return -1;
 	
-	tty_info *tmp_tty = uart_init(1, 115200);
-		if(tmp_tty == NULL)
-			return -1;
-	
-	tty_info *rtk_tty = uart_init(2, 115200);
-		if(rtk_tty == NULL)
-			return -1;
-	
-	tv.tv_sec = 10;    //10ms
+	tv.tv_sec = 50;    //10ms
 	tv.tv_usec = 0;
 	if(gyr_tty->fd > maxfd)
 		maxfd = gyr_tty->fd;
-	if(tmp_tty->fd > maxfd)
-		maxfd = tmp_tty->fd;
-	if(rtk_tty->fd > maxfd)
-		maxfd = rtk_tty->fd;
-	
-	sys_log("test test test ");
+	int gyr_fd = fifo_open("./gyr_fifo");
+	if(gyr_fd < 0){
+		sys_log("open or create fifo faild");
+		return -1;
+	}
 	for(;;){
 
 		FD_ZERO(&recv_fds);
         	FD_SET(gyr_tty->fd,&recv_fds);  
-        	FD_SET(tmp_tty->fd,&recv_fds);
-		FD_SET(rtk_tty->fd,&recv_fds);
 		fd_result = select(maxfd + 1, &recv_fds, NULL, NULL, &tv);
 		if(fd_result < 0)
         	{
@@ -97,21 +94,12 @@ int main(int argc, char **argv)
 		}
 		else {
 			if(FD_ISSET(gyr_tty->fd, &recv_fds)){
-				nbyte = recvn_tty(gyr_tty,buff,64);
+				recvn_tty(gyr_tty,buff,sizeof(buff));
+				get_mpu6050_data(buff, gyr_fd);
 			}
-			if(FD_ISSET(tmp_tty->fd, &recv_fds)){
-                                nbyte = recvn_tty(tmp_tty,buff,64);
-                        }
-			if(FD_ISSET(rtk_tty->fd, &recv_fds)){
-                                nbyte = recvn_tty(rtk_tty,buff,64);
-                        }			
 		}
 	}
-	free(gyr_data);
-	free(tmp_data);
-	free(rtk_data);
+	fifo_close(gyr_fd);
 	clean_tty(gyr_tty);
-	clean_tty(tmp_tty);
-	clean_tty(rtk_tty);
 	return 0;
 }
