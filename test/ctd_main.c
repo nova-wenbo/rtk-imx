@@ -35,9 +35,6 @@ int get_mpu6050_data(unsigned char data[], int fd)
 {
 	int i;
 	struct mpu6050_data pdata;
-	struct tty_msg* msg = malloc(sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
-	msg->type = 0xE0;
-	
 	for(i=0;i<33;i++){
 		if(data[i] == 0x55 && data[i+1] == 0x51){
 			memset(&pdata, 0, sizeof(struct mpu6050_data));
@@ -53,11 +50,9 @@ int get_mpu6050_data(unsigned char data[], int fd)
                         pdata.angle[1] = (data[i+27]<<8| data[i+26])/32768.0*180;
                         pdata.angle[2] = (data[i+29]<<8| data[i+28])/32768.0*180;
                         printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",pdata.angle[0],pdata.angle[1],pdata.angle[2]);
-			memcpy(msg->data, &pdata, (size_t) sizeof(struct mpu6050_data));
-			fifo_tx(fd, msg, sizeof(struct tty_msg) + sizeof(struct mpu6050_data));
+			fifo_tx(fd, &pdata, sizeof(struct mpu6050_data));
 		}
 	}
-	free(msg);
 	return 0;
 }
 

@@ -15,47 +15,47 @@
 #include "debuglog.h"
 #include "fifo.h"
 #include "common.h"
+#include "cJson/s2j.h"
+#include "cJson/s2jdef.h"
+#include "cJson/cJSON.h"
 
+#if 1
+static cJSON *struct_to_json_gyr(void* struct_obj) {
+    gyr_msg *struct_msg = (gyr_msg *)struct_obj;
+    
+    /* create Student JSON object */
+    s2j_create_json_obj(json_msg);
 
-#define HELLO_WORLD_SERVER_PORT 6666 
-#define LENGTH_OF_LISTEN_QUEUE 20
+    /* serialize data to Student JSON object. */
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, start);
+    s2j_json_set_basic_element(json_msg, struct_msg, int, version);
+    s2j_json_set_basic_element(json_msg, struct_msg, int, sign);
+    s2j_json_set_basic_element(json_msg, struct_msg, int, type);
+    /* serialize data to Student.Hometown JSON object. */
+    s2j_json_set_struct_element(json_data, json_msg, struct_data, struct_msg, struct mpu6050_data, data);
+    s2j_json_set_array_element(json_data, struct_data, float, a, 3);
+    s2j_json_set_array_element(json_data, struct_data, float, w, 3);
+    s2j_json_set_array_element(json_data, struct_data, float, angle, 3);
+
+    s2j_json_set_basic_element(json_msg, struct_msg, int, end);
+    /* return Student JSON object pointer */
+    return json_msg;
+}
+#endif
 int main(int argc, char **argv)
 {
 	fd_set recv_fds;
         int fd_result;
         int maxfd = 0;
         struct timeval tv;
-	struct mpu6050_data gyr;
-	struct msg gyr_msg;
-	struct sockaddr_in server_addr;
-    	bzero(&server_addr,sizeof(server_addr)); //把一段内存区的内容全部设置为0
-    	server_addr.sin_family = AF_INET;
-    	server_addr.sin_addr.s_addr = htons(INADDR_ANY);
-    	server_addr.sin_port = htons(HELLO_WORLD_SERVER_PORT);
-	int server_socket = socket(PF_INET,SOCK_STREAM,0);
-	if( server_socket < 0)
-	{
-        	sys_log("Create Socket Failed!");
-        	return -1;
-   	}
-	int opt =1;
-	setsockopt(server_socket,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
-	if( bind(server_socket,(struct sockaddr*)&server_addr,sizeof(server_addr)))
-    	{
-        	sys_log("Server Bind Port : %d Failed!", HELLO_WORLD_SERVER_PORT); 
-        	return -1;
-    	}
-	if( listen(server_socket, LENGTH_OF_LISTEN_QUEUE) )
-    	{
-        	sys_log("Server Listen Failed!"); 
-        	return -1;
-    	}
-	
-	struct msg *gyr_data = malloc(sizeof(struct msg) + sizeof(struct mpu6050_data));
-	if(gyr_data == NULL){
-		sys_log("malloc mem failed");
-		return -1;
-	}
+
+	gyr_msg gyr_msg;
+	gyr_msg.start = 0x01;
+	gyr_msg.version = 0x01;
+	gyr_msg.sign = 0xF0;
+	gyr_msg.type = 0xE0;
+	gyr_msg.end = 0xFF;
+
 	int gyr_fd = fifo_open("./gyr_fifo");
 	if(gyr_fd < 0){
 		sys_log("open or create fifo faild");
@@ -67,15 +67,6 @@ int main(int argc, char **argv)
         if(gyr_fd > maxfd)
                 maxfd = gyr_fd;
 	for(;;){
-		struct sockaddr_in client_addr;
-        	socklen_t length = sizeof(client_addr);
-		int new_server_socket = accept(server_socket,(struct sockaddr*)&client_addr,&length);
-		if ( new_server_socket < 0)
-        	{
-            		printf("Server Accept Failed!\n");
-            		break;
-       		}
-		
                 FD_ZERO(&recv_fds);
                 FD_SET(gyr_fd, &recv_fds);
                 fd_result = select(maxfd + 1, &recv_fds, NULL, NULL, &tv);
@@ -92,26 +83,24 @@ int main(int argc, char **argv)
                 }
                 else {
                         if(FD_ISSET(gyr_fd, &recv_fds)){
-				memset(&gyr, 0, sizeof(struct mpu6050_data));
-        			fifo_rx(gyr_fd, &gyr_data->tty_msg, sizeof(struct msg) + sizeof(struct mpu6050_data)); 
-				if((unsigned char)gyr_data->tty_msg.type == 0xe0){
-					memcpy(&gyr, &gyr_data->tty_msg.data, sizeof(struct mpu6050_data));
-                                	printf("angle = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr.angle[0],gyr.angle[1],gyr.angle[2]);	
-					gyr_msg.start = 0x01;
-					gyr_msg.version = PROT_VERSION;
-					gyr_msg.sign = 0xF0;
-					gyr_msg.end = 0xFF;
-					gyr_msg.checksum = sizeof(struct msg) + sizeof(struct mpu6050_data);  //37				
-					if(send(new_server_socket,(struct msg *)&gyr_data,gyr_msg.checksum,0) < 0){
-						sys_log("socket send data faild");
-						break;
-					}	
-				}		                       
-                                
+				memset(&gyr_msg.data, 0, sizeof(struct mpu6050_data));
+               			fifo_rx(gyr_fd, &gyr_msg.data, sizeof(struct mpu6050_data));
+				cJSON *json_msg = struct_to_json_gyr(&gyr_msg);
+//				gyr_msg *converted_msg_obj = json_to_struct(json_msg);
+
+//				if(memcmp(&gyr_msg, converted_msg_obj, sizeof(gyr_msg))) {
+  //      				printf("Converted failed!\n");
+    //				} else {
+      //  				printf("Converted OK!\n");
+    	//			}
+    	//			s2j_delete_json_obj(json_msg);
+    	//			s2j_delete_struct_obj(converted_msg_obj);
+
+				//printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr_msg.data.a[0],gyr_msg.data.a[1],gyr_msg.data.a[2]);
+					
                         }
                 }
         }
 	fifo_close(gyr_fd);
-        free(gyr_data);
 	return 0;
 }
