@@ -1,0 +1,1 @@
+gcc -g -Wall -I../../include -fpic -shared *.c -o ../../lib/libcJson.so

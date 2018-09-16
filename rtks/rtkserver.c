@@ -18,8 +18,9 @@
 #include "s2j.h"
 #include "s2jdef.h"
 #include "cJSON.h"
+#define C_JSON
 
-#if 1
+#ifdef C_JSON
 static cJSON *struct_to_json_gyr(void* struct_obj) {
     gyr_msg *struct_msg = (gyr_msg *)struct_obj;
     

@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		if(gyr_tty == NULL)
 			return -1;
 	
-	tv.tv_sec = 50;    //10ms
+	tv.tv_sec = 50;    //50ms
 	tv.tv_usec = 0;
 	if(gyr_tty->fd > maxfd)
 		maxfd = gyr_tty->fd;

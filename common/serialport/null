@@ -1,0 +1,1 @@
+gcc -g -Wall -I../../include -fpic -shared serialport.c -o ../../lib/libserialport.so
