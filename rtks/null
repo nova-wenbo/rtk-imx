@@ -1,1 +1,0 @@
-gcc -g -Wall -I../include rtkserver.c ../lib/libcJson.so ../lib/libdebuglog.so ../lib/libfifo.so -lm -o ../obj/rtks 

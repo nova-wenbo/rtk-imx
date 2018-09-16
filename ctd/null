@@ -1,1 +1,0 @@
-gcc -g -I../include ctd_main.c ../lib/libcJson.so ../lib/libdebuglog.so ../lib/libfifo.so ../lib/libserialport.so -lm -o ../obj/ctd 
