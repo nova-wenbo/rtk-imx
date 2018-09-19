@@ -10,7 +10,8 @@ function compile_lib(){
 	cd $WORKDIR/common/cJson && make > null 
 	cd $WORKDIR/common/debuglog && make > null
 	cd $WORKDIR/common/fifo && make > null
-	cd $WORKDIR/common/serialport && make > null 
+	cd $WORKDIR/common/serialport && make > null
+	cd $WORKDIR/common/websocket && make > null 
 	cd $WORKDIR
 }
 
