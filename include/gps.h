@@ -42,5 +42,5 @@ typedef struct{
 
 
 
-extern gps_rmc_parse(char *line, gps_info *GPS);
+extern int gps_rmc_parse(char *line, gps_info *GPS);
 extern int gps_gga_parse(char *line, gps_info *GPS);

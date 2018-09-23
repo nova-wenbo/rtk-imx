@@ -484,6 +484,8 @@ int main(int argc, char **argv)
 		sys_log("open or create fifo faild");
 		return -1;
 	}
+	cJSON *cjson_gyr =  cJSON_CreateObject();
+
 
 	tv.tv_sec = 50;    //50ms
         tv.tv_usec = 0;
@@ -559,13 +561,15 @@ int main(int argc, char **argv)
                         if(FD_ISSET(gyr_fd, &recv_fds)){
 				memset(&gyr_msg.data, 0, sizeof(struct mpu6050_data));
                			fifo_rx(gyr_fd, &gyr_msg.data, sizeof(struct mpu6050_data));
-				struct_to_json_gyr(&gyr_msg);
+				cjson_gyr = struct_to_json_gyr(&gyr_msg);
 				//printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr_msg.data.a[0],gyr_msg.data.a[1],gyr_msg.data.a[2]);
-				const char *str = "hello world !!!";
-				response(conn_fd, str);			
+				//const char *str = "hello world !!!";
+				response(conn_fd, cJSON_Print(cjson_gyr));			
+				
                       	}
                 }
 	}
 	fifo_close(gyr_fd);
+	
 	return 0;
 }
