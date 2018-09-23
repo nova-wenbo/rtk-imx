@@ -1,6 +1,6 @@
 
-INC = ../include
-LIB = ../lib
+INC = /usr/include
+LIB = /lib
 OBJ = ../obj
 FIFO_LIB = $(LIB)/libcJson.so \
 	$(LIB)/libdebuglog.so\
