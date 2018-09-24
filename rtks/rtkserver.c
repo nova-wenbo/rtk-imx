@@ -359,19 +359,37 @@ static cJSON *struct_to_json_gyr(void* struct_obj) {
 
     /* serialize data to Student JSON object. */
     s2j_json_set_basic_element(json_msg, struct_msg, uchar, start);
-    s2j_json_set_basic_element(json_msg, struct_msg, int, version);
-    s2j_json_set_basic_element(json_msg, struct_msg, int, sign);
-    s2j_json_set_basic_element(json_msg, struct_msg, int, type);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, version);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, sign);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, type);
     /* serialize data to Student.Hometown JSON object. */
     s2j_json_set_struct_element(json_data, json_msg, struct_data, struct_msg, struct mpu6050_data, data);
     s2j_json_set_array_element(json_data, struct_data, float, a, 3);
     s2j_json_set_array_element(json_data, struct_data, float, w, 3);
     s2j_json_set_array_element(json_data, struct_data, float, angle, 3);
 
-    s2j_json_set_basic_element(json_msg, struct_msg, int, end);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, end);
     /* return Student JSON object pointer */
     return json_msg;
 }
+static cJSON *struct_to_json_tmp(void* struct_obj) {
+    temp_msg *struct_msg = (temp_msg *)struct_obj;
+
+    /* create Student JSON object */
+    s2j_create_json_obj(json_msg);
+
+    /* serialize data to Student JSON object. */
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, start);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, version);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, sign);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, type);
+    /* serialize data to Student.Hometown JSON object. */
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, data);
+    s2j_json_set_basic_element(json_msg, struct_msg, uchar, end);
+    /* return Student JSON object pointer */
+    return json_msg;
+}
+
 #endif
 
 int startup(int _port,const char* _ip)
@@ -484,13 +502,27 @@ int main(int argc, char **argv)
 		sys_log("open or create fifo faild");
 		return -1;
 	}
+	temp_msg tmp_msg;
+	gyr_msg.start = 0x01;
+        gyr_msg.version = 0x01;
+        gyr_msg.sign = 0xF0;
+        gyr_msg.type = 0xE1;
+        gyr_msg.end = 0xFF;
+	int tmp_fd = fifo_open("./tmp_fifo");
+        if(tmp_fd < 0){
+                sys_log("open or create fifo faild");
+                return -1;
+        }
+
 	cJSON *cjson_gyr =  cJSON_CreateObject();
+	cJSON *cjson_tmp =  cJSON_CreateObject();
 
-
-	tv.tv_sec = 50;    //50ms
+	tv.tv_sec = 3600;    //3600s
         tv.tv_usec = 0;
         if(gyr_fd > maxfd)
                 maxfd = gyr_fd;
+	if(tmp_fd > maxfd)
+		maxfd = tmp_fd;
 	for(;;){
 		nfds=epoll_wait(epoll_fd,events,MAX_EVENTS,20); // 等待事件发生
 		if(nfds==-1)  
@@ -546,6 +578,7 @@ int main(int argc, char **argv)
         	}
                	FD_ZERO(&recv_fds);
                 FD_SET(gyr_fd, &recv_fds);
+		FD_SET(tmp_fd, &recv_fds);
                 fd_result = select(maxfd + 1, &recv_fds, NULL, NULL, &tv);
                 if(fd_result < 0)
                 {
@@ -563,13 +596,17 @@ int main(int argc, char **argv)
                			fifo_rx(gyr_fd, &gyr_msg.data, sizeof(struct mpu6050_data));
 				cjson_gyr = struct_to_json_gyr(&gyr_msg);
 				//printf("a = %4.3f\t%4.3f\t%4.3f\t\r\n",gyr_msg.data.a[0],gyr_msg.data.a[1],gyr_msg.data.a[2]);
-				//const char *str = "hello world !!!";
 				response(conn_fd, cJSON_Print(cjson_gyr));			
 				
                       	}
+			if(FD_ISSET(tmp_fd, &recv_fds)){
+				fifo_rx(tmp_fd, &tmp_msg.data, sizeof(uchar));
+				cjson_tmp = struct_to_json_tmp(&tmp_msg);
+				response(conn_fd, cJSON_Print(cjson_tmp));
+			}
                 }
 	}
 	fifo_close(gyr_fd);
-	
+	fifo_close(tmp_fd);
 	return 0;
 }

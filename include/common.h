@@ -1,6 +1,15 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
+
 #define PROT_VERSION 0x01
+#define MPUDATA 0xE0
+#define GPSDATA 0xE2
+#define TMPDATA 0XE1
+
+#define RSENVAL 0    //return successful value
+#define RFENVAL -1   //return faild value
+#define OFENVAL -2   //open device faild
+
 typedef unsigned char uchar;
 //E0=gyr E1=tmp E2=rtk
 struct mpu6050_data{
@@ -26,7 +35,7 @@ typedef struct{
         uchar version; //0x01 : first version
         uchar sign;    //F0实时数据   F1存储数据
         uchar type; 
-        float temp;
+        uchar data;
         uchar end;    //0xFF
 }temp_msg;
 
