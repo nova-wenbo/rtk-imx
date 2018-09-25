@@ -63,7 +63,7 @@ void *tmp_uart_alarm(void *arg)
 	//int i = 0;
 	unsigned char data = 0;
 	sys_log("tmp");
-	tty_info *tmp_tty = uart_init(0, 9600);
+	tty_info *tmp_tty = uart_init(3, 9600);
 	if(tmp_tty == NULL)
         	exit(-1);
 	int tmp_fd = fifo_open("./tmp_fifo");
