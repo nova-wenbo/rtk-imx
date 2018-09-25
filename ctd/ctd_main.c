@@ -76,6 +76,7 @@ void *tmp_uart_alarm(void *arg)
 		int count = sendn_tty(tmp_tty, tmp_send, sizeof(tmp_send));
 		if(count < 0)
 			exit(-1);
+		sys_log("brfore read");
 		usleep(10000);
 		count = recvn_tty(tmp_tty, tmp_recv, sizeof(tmp_recv));
 		sys_log("tmp read %d", count);
