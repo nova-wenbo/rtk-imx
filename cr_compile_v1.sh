@@ -11,7 +11,9 @@ function compile_lib(){
 	cd $WORKDIR/common/debuglog && make > null
 	cd $WORKDIR/common/fifo && make > null
 	cd $WORKDIR/common/serialport && make > null
-	cd $WORKDIR/common/websocket && make > null 
+	cd $WORKDIR/common/websocket && make > null
+	cp $WORKDIR/include/* /usr/include/
+	cp $WORKDIR/lib/* /lib/ 
 	cd $WORKDIR
 }
 

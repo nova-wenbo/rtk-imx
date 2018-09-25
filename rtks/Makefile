@@ -1,5 +1,5 @@
 
-INC = /include
+INC = /usr/include
 LIB = /lib
 OBJ = ../obj
 FIFO_LIB = $(LIB)/libcJson.so \
