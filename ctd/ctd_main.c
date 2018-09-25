@@ -107,9 +107,9 @@ int main(int argc, char **argv)
                 return -1;
        	}
 	
-	/*int err = pthread_create(&tid, NULL, tmp_uart_alarm, NULL);
+	int err = pthread_create(&tid, NULL, tmp_uart_alarm, NULL);
 	if(err != 0)  
-        	sys_log("can't create thread 1: %d\n", strerror(err));*/
+        	sys_log("can't create thread 1: %d\n", strerror(err));
 	if(gyr_tty->fd > maxfd)
                 maxfd = gyr_tty->fd;
 	tv.tv_sec = 360;    //1 hour
