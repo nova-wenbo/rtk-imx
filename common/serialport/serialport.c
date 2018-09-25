@@ -10,7 +10,7 @@ tty_info *ready_tty(int id)
 	memset(ptty,0,sizeof(tty_info)); 
 	pthread_mutex_init(&ptty->mt,NULL); 
 	//sprintf(ptty->name,"/dev/ttyUSB%d",id); 
-	//sprintf(ptty->name,"/dev/ttysWK%d",id); 
+	sprintf(ptty->name,"/dev/ttysWK%d",id); 
 	// 打开并且设置串口 
 	ptty->fd = open(ptty->name, O_RDWR | O_NOCTTY |O_NDELAY); 
 	if (ptty->fd <0) 
