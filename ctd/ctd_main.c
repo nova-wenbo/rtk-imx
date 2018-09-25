@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	struct timeval tv;
 	int gyr_fd = -1;
 	pthread_t   tid;
-	tty_info *gyr_tty = uart_init(2, 9600);
+	tty_info *gyr_tty = uart_init(0, 9600);
 	if(gyr_tty == NULL){
 		sys_log("uart init faild");
 	}
@@ -107,9 +107,9 @@ int main(int argc, char **argv)
                 return -1;
        	}
 	
-	int err = pthread_create(&tid, NULL, tmp_uart_alarm, NULL);
+	/*int err = pthread_create(&tid, NULL, tmp_uart_alarm, NULL);
 	if(err != 0)  
-        	sys_log("can't create thread 1: %d\n", strerror(err));
+        	sys_log("can't create thread 1: %d\n", strerror(err));*/
 	if(gyr_tty->fd > maxfd)
                 maxfd = gyr_tty->fd;
 	tv.tv_sec = 360;    //1 hour
