@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	struct timeval tv;
 	int gyr_fd = -1;
 	pthread_t   tid;
-	tty_info *gyr_tty = uart_init(1, 9600);
+	tty_info *gyr_tty = uart_init(0, 9600);
 	if(gyr_tty == NULL){
 		sys_log("uart init faild");
 	}
