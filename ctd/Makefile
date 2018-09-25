@@ -1,6 +1,6 @@
 
-INC = ../include
-LIB = ../lib
+INC = /include
+LIB = /lib
 OBJ = ../obj
 CTD_LIB = $(LIB)/libcJson.so \
 	$(LIB)/libdebuglog.so\
