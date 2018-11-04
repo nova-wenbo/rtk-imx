@@ -72,7 +72,7 @@ void *tmp_uart_alarm(void *arg)
                 exit(-1);
         }
 	for(;;){
-		sleep(3);
+		sleep(4);
 		int count = sendn_tty(tmp_tty, tmp_send, sizeof(tmp_send));
 		if(count < 0)
 			exit(-1);

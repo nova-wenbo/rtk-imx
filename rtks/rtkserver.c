@@ -16,7 +16,7 @@
 #include<netinet/tcp.h>
 #include <linux/ip.h>
 #include <sys/epoll.h>
-
+#include "gps.h"
 #include "base64.h"
 #include "sha1.h"
 #include "intlib.h"
@@ -372,6 +372,25 @@ static cJSON *struct_to_json_gyr(void* struct_obj) {
     /* return Student JSON object pointer */
     return json_msg;
 }
+static cJSON *struct_to_json_gps(void* struct_obj)
+{
+	gps_info *struct_msg = (gps_info *)struct_obj;
+	s2j_create_json_obj(json_msg);
+	s2j_json_set_basic_element(json_msg, struct_msg, double, latitude);
+	s2j_json_set_basic_element(json_msg, struct_msg, double, longitude);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, latitude_Degree);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, latitude_Cent);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, latitude_Second);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Degree);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Cent);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
+//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
+//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
+//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
+//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);		
+	return json_msg;
+}
+
 static cJSON *struct_to_json_tmp(void* struct_obj) {
     temp_msg *struct_msg = (temp_msg *)struct_obj;
 
@@ -446,6 +465,7 @@ int main(int argc, char **argv)
     	struct sockaddr_in  servaddr;
     	struct sockaddr_in  cliaddr;
     	socklen_t           cliaddr_len;
+	
 
 	if(argc > 1) 			
 		port = atoi(argv[1]);			
@@ -483,7 +503,7 @@ int main(int argc, char **argv)
         	exit(EXIT_FAILURE);  
     	}  
     	int nfds;	// epoll监听事件发生的个数  
-	
+	gps_info gps;
 	/* select listen*/	
 	fd_set recv_fds;
         int fd_result;
@@ -501,6 +521,11 @@ int main(int argc, char **argv)
 	if(gyr_fd < 0){
 		sys_log("open or create fifo faild");
 		return -1;
+	}
+	int gps_fd = fifo_open("./gps_fifo");
+	if(gps_fd < 0){
+		sys_log("open or create fifo faild");
+                return -1;
 	}
 	temp_msg tmp_msg;
 	gyr_msg.start = 0x01;
@@ -521,6 +546,8 @@ int main(int argc, char **argv)
         tv.tv_usec = 0;
         if(gyr_fd > maxfd)
                 maxfd = gyr_fd;
+	if(gps_fd > maxfd)
+		maxfd = gps_fd;
 	if(tmp_fd > maxfd)
 		maxfd = tmp_fd;
 	for(;;){
@@ -578,7 +605,9 @@ int main(int argc, char **argv)
         	}
                	FD_ZERO(&recv_fds);
                 FD_SET(gyr_fd, &recv_fds);
+		FD_SET(gps_fd, &recv_fds);
 		FD_SET(tmp_fd, &recv_fds);
+		
                 fd_result = select(maxfd + 1, &recv_fds, NULL, NULL, &tv);
                 if(fd_result < 0)
                 {
@@ -604,8 +633,16 @@ int main(int argc, char **argv)
 				cjson_tmp = struct_to_json_tmp(&tmp_msg);
 				response(conn_fd, cJSON_Print(cjson_tmp));
 			}
+			if(FD_ISSET(gps_fd, &recv_fds)){
+				fifo_rx(gps_fd, &gps,sizeof(gps));
+				printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
+                                printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
+                                printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
+                                printf("gps: %lf-%lf\n", gps.latitude, gps.longitude);
+			}
                 }
 	}
+	fifo_close(gps_fd);
 	fifo_close(gyr_fd);
 	fifo_close(tmp_fd);
 	return 0;
