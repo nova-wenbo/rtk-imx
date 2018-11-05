@@ -73,6 +73,9 @@ typedef struct {
 #define S2J_JSON_SET_double_ELEMENT(to_json, from_struct, _element) \
     cJSON_AddNumberToObject(to_json, #_element, (from_struct)->_element);
 
+#define S2J_JSON_SET_float_ELEMENT(to_json, from_struct, _element) \
+    cJSON_AddNumberToObject(to_json, #_element, (from_struct)->_element);
+
 #define S2J_JSON_SET_string_ELEMENT(to_json, from_struct, _element) \
     cJSON_AddStringToObject(to_json, #_element, (from_struct)->_element);
 
@@ -103,6 +106,8 @@ typedef struct {
 
 #define S2J_JSON_SET_BASIC_ELEMENT(to_json, from_struct, type, _element) \
     S2J_JSON_SET_##type##_ELEMENT(to_json, from_struct, _element)
+
+
 
 #define S2J_JSON_SET_ARRAY_ELEMENT(to_json, from_struct, type, _element, size) \
     { \

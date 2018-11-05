@@ -384,10 +384,19 @@ static cJSON *struct_to_json_gps(void* struct_obj)
 	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Degree);
 	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Cent);
 	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
-//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
-//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
-//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);
-//	s2j_json_set_basic_element(json_msg, struct_msg, int, longitude_Second);		
+	s2j_json_set_basic_element(json_msg, struct_msg, float, speed); //float
+	s2j_json_set_basic_element(json_msg, struct_msg, float, direction);//float
+	s2j_json_set_basic_element(json_msg, struct_msg, float, height);//float
+	s2j_json_set_basic_element(json_msg, struct_msg, int, satellite);
+	s2j_json_set_basic_element(json_msg, struct_msg, int, NS); 
+	s2j_json_set_basic_element(json_msg, struct_msg, int, EW); 
+	s2j_json_set_struct_element(json_data, json_msg, struct_data, struct_msg, DATE_TIME, D);
+	s2j_json_set_basic_element(json_data, struct_data, int, year);
+	s2j_json_set_basic_element(json_data, struct_data, int, month);
+	s2j_json_set_basic_element(json_data, struct_data, int, day);	
+	s2j_json_set_basic_element(json_data, struct_data, int, hour);
+	s2j_json_set_basic_element(json_data, struct_data, int, minute);	
+	s2j_json_set_basic_element(json_data, struct_data, int, second);
 	return json_msg;
 }
 
@@ -541,7 +550,7 @@ int main(int argc, char **argv)
 
 	cJSON *cjson_gyr =  cJSON_CreateObject();
 	cJSON *cjson_tmp =  cJSON_CreateObject();
-
+	cJSON *cjson_gps =  cJSON_CreateObject();
 	tv.tv_sec = 3600;    //3600s
         tv.tv_usec = 0;
         if(gyr_fd > maxfd)
@@ -635,6 +644,8 @@ int main(int argc, char **argv)
 			}
 			if(FD_ISSET(gps_fd, &recv_fds)){
 				fifo_rx(gps_fd, &gps,sizeof(gps));
+				cjson_gps = struct_to_json_gps(&gps);
+				response(conn_fd, cJSON_Print(cjson_gps));
 				printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
                                 printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
                                 printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
