@@ -7,11 +7,11 @@ function compile_lib(){
 	if [ ! -d $WORKDIR/lib ];then
 		mkdir -p $WORKDIR/lib
 	fi
-	cd $WORKDIR/common/cJson && make > null 
-	cd $WORKDIR/common/debuglog && make > null
-	cd $WORKDIR/common/fifo && make > null
-	cd $WORKDIR/common/serialport && make > null
-	cd $WORKDIR/common/websocket && make > null
+	cd $WORKDIR/common/cJson && make 
+	cd $WORKDIR/common/debuglog && make 
+	cd $WORKDIR/common/fifo && make 
+	cd $WORKDIR/common/serialport && make 
+	cd $WORKDIR/common/websocket && make 
 	cp $WORKDIR/include/* /usr/include/
 	cp $WORKDIR/lib/* /lib/ 
 	cd $WORKDIR
@@ -22,9 +22,11 @@ function compile_obj(){
 	if [ ! -d $WORKDIR/obj ];then
                 mkdir -p $WORKDIR/obj
         fi
-	cd $WORKDIR/ctd && make >  null
-	cd $WORKDIR/rtks && make > null
-	cd $WORKDIR/rtkc && make > null
+	cd $WORKDIR/ctd/gps && make
+	cd $WORKDIR/ctd/gyr && make
+	cd $WORKDIR/ctd/temp && make
+	cd $WORKDIR/rtks && make 
+	cd $WORKDIR/rtkc && make 
 	cd $WORKDIR
 }
 function compile_all(){
