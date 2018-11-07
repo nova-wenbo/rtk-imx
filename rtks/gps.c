@@ -109,6 +109,7 @@ int gps_rmc_parse(char *line, gps_info *GPS)
     float lati_cent_tmp, lati_second_tmp;
     float long_cent_tmp, long_second_tmp;
     float speed_tmp;
+    double latitude, longitude;
     char *buf = line;
     ch = buf[5];
     status = buf[GetComma(2, buf)];
@@ -119,9 +120,12 @@ int gps_rmc_parse(char *line, gps_info *GPS)
         {
             GPS->NS = buf[GetComma(4, buf)];
             GPS->EW = buf[GetComma(6, buf)];
-
-            GPS->latitude = Get_Double_Number(&buf[GetComma(3, buf)]);
-            GPS->longitude = Get_Double_Number(&buf[GetComma(5, buf)]);
+	    latitude = Get_Double_Number(&buf[GetComma(3, buf)]);
+	    GPS->latitude  = (double)((int)(latitude/100) + (latitude - 100*(int)(latitude/100))/60);
+            //GPS->latitude = Get_Double_Number(&buf[GetComma(3, buf)]);
+	    longitude = Get_Double_Number(&buf[GetComma(5, buf)]);
+	    GPS->longitude = (double)((int)(longitude/100) + (longitude - 100*(int)(longitude/100))/60);
+            //GPS->longitude = Get_Double_Number(&buf[GetComma(5, buf)]);
 	    
             GPS->latitude_Degree = (int)GPS->latitude / 100; //分离纬度
             lati_cent_tmp = (GPS->latitude - GPS->latitude_Degree * 100);
