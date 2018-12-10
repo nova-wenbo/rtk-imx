@@ -644,8 +644,8 @@ int main(int argc, char **argv)
 			}
 			if(FD_ISSET(gps_fd, &recv_fds)){
 				fifo_rx(gps_fd, &gps,sizeof(gps));
-				cjson_gps = struct_to_json_gps(&gps);
-				response(conn_fd, cJSON_Print(cjson_gps));
+				//cjson_gps = struct_to_json_gps(&gps);
+				//response(conn_fd, cJSON_Print(cjson_gps));
 				printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
                                 printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
                                 printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);

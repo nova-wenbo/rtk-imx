@@ -55,7 +55,7 @@ int main()
 			
 	if(gps_tty->fd > maxfd)
                 maxfd = gps_tty->fd;
-        tv.tv_sec = 360;    //1 hour
+        tv.tv_sec = 10;    //1 hour
         tv.tv_usec = 0;
 	for(;;){
                 FD_ZERO(&recv_fds);
@@ -75,15 +75,17 @@ int main()
                 else{
                         if(FD_ISSET(gps_tty->fd, &recv_fds)){
 				memset(buff, 0, sizeof(buff));
+				memset(&gps, 0, sizeof(gps));
                                 recvn_tty(gps_tty,buff,sizeof(buff));
+				printf("%s\n",buff);
 				gps_rmc_parse(buff, &gps);
 				gps_gga_parse(buff, &gps);
 				if((int)(gps.latitude) != 0)
 					fifo_tx(gps_fd, &gps, sizeof(gps));
-				//printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
-				//printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
-				//printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
-				//printf("gps: %lf-%lf\n", gps.latitude, gps.longitude);
+				printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
+				printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
+				printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
+				printf("gps: %lf-%lf\n", gps.latitude, gps.longitude);
                         }
                 }
         }
