@@ -164,7 +164,9 @@ int gps_rmc_parse(char *line, gps_info *GPS)
 int gps_gga_parse(char *line, gps_info *GPS)
 {
     char ch, status;
-    char *buf = line;
+    char *buf = NULL;
+    if(NULL==(buf=strstr(line,"$GPGGA")))
+        return -1;
     ch = buf[4];
     status = buf[GetComma(2, buf)];
 

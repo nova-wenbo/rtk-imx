@@ -41,8 +41,6 @@ int main()
 	int maxfd = 0;
 	char buff[128] = {0};
         struct timeval tv;	
-	int i = 0;
-	int t = 1;
 	gps_info gps;
 	tty_info *gps_tty = uart_init(0, 115200);
 	if(gps_tty == NULL){
@@ -77,18 +75,11 @@ int main()
                         if(FD_ISSET(gps_tty->fd, &recv_fds)){
 				memset(buff, 0, sizeof(buff));
 				memset(&gps, 0, sizeof(gps));
-				while(t){
-                                	i = recvn_tty(gps_tty,buff,sizeof(buff));
-					if(buff[i] == '\n'){
-						i = 0;
-						t = 0;
-					}	
-				}
+                              	recvn_tty(gps_tty,buff,sizeof(buff));
 				gps_rmc_parse(buff, &gps);
 				gps_gga_parse(buff, &gps);
 				if((int)(gps.latitude) != 0)
 					fifo_tx(gps_fd, &gps, sizeof(gps));
-				t = 1;
 				printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
 				printf("time : %d-%d-%d-%d:%d:%d \n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
 				printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
