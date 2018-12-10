@@ -109,8 +109,10 @@ int gps_rmc_parse(char *line, gps_info *GPS)
     float lati_cent_tmp, lati_second_tmp;
     float long_cent_tmp, long_second_tmp;
     float speed_tmp;
-    double latitude, longitude;
-    char *buf = line;
+    double latitude, longitude; 
+    char *buf = NULL;
+    if(NULL==(buf=strstr(line,"$GPRMC")))
+	return -1;
     ch = buf[5];
     status = buf[GetComma(2, buf)];
 
