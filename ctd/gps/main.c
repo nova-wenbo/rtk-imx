@@ -40,11 +40,10 @@ int main()
 	int fd_result;
 	int maxfd = 0;
 	char file[32];
-	int Log_fd = 0;
-	int t = 1;
+	FILE* Log_fd = NULL;
+	int t = 0;
 	char buff[512] = {0};
         struct timeval tv;	
-	char GPSINFO[64];
 	gps_info gps;
 	tty_info *gps_tty = uart_init(0, 115200);
 	if(gps_tty == NULL){
@@ -84,25 +83,21 @@ int main()
 				if((int)(gps.latitude) != 0)
 					fifo_tx(gps_fd, &gps, sizeof(gps));
 				//printf("height : %02f, satellite : %d \n", gps.height, gps.satellite);
-				sprintf(GPSINFO,"%d-%d-%d-%d:%d:%d %lf-%lf\n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second,gps.latitude, gps.longitude);
-				//printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
-				//printf("gps: %lf-%lf\n", gps.latitude, gps.longitude);
-				if(t == 1){
-					sprintf(file,"/var/GpsLog/%d-%d-%d-%d:%d:%d",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second);
-					Log_fd = open(file, O_CREAT | O_RDWR);
-					if(Log_fd < 0){
-						t = 1;
-					}else
-						t = 0;					
-				}
 				if(t == 0){
-					write(Log_fd, GPSINFO, sizeof(GPSINFO));
+					sprintf(file,"/var/GpsLog/%d-%d-%d.gps",gps.D.year,gps.D.month,gps.D.day);
+					Log_fd = fopen(file, "a+");
+					if(Log_fd == NULL){
+                                                printf("open file failed\n");
+                                        }
+					fprintf(Log_fd,"%d-%d-%d_%d:%d:%d %lf,%lf\n",gps.D.year,gps.D.month,gps.D.day,gps.D.hour,gps.D.minute,gps.D.second,gps.latitude, gps.longitude);
+					//printf("latitude : %d-%d-%d\n",gps.latitude_Degree,gps.latitude_Cent,gps.latitude_Second);
+					printf("gps: %lf-%lf\n", gps.latitude, gps.longitude);
+					fclose(Log_fd);
 				}
                         }
                 }
         }
 	close(gps_fd);
-	close(Log_fd);
 	clean_tty(gps_tty);
 	return 0;
 }
